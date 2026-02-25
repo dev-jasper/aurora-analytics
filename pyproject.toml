@@ -1,0 +1,44 @@
+[project]
+name = "news-ingest-pipeline"
+version = "0.1.0"
+description = "News ingest pipeline: NewsAPI -> clean/validate -> Kinesis"
+requires-python = ">=3.11"
+dependencies = [
+  "boto3>=1.34.0",
+  "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.5.0",
+  "mypy>=1.10.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+lint.select = ["E", "F", "I", "B", "UP"]
+lint.ignore = ["E501"]  # keep line-length handled by formatter preference
+lint.fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["news_ingest"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
