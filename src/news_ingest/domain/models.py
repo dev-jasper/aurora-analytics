@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from hashlib import sha256
 from typing import Any
 
@@ -12,12 +12,12 @@ def parse_iso8601(value: str) -> datetime:
         v = v[:-1] + "+00:00"
     dt = datetime.fromisoformat(v)
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
 
 
 def compute_article_id(url: str, published_at: datetime, title: str) -> str:
-    raw = f"{url}|{published_at.isoformat()}|{title}".encode("utf-8")
+    raw = f"{url}|{published_at.isoformat()}|{title}".encode()
     return sha256(raw).hexdigest()
 
 
@@ -49,7 +49,7 @@ class NewsArticle:
         payload: dict[str, Any],
         *,
         ingested_at: datetime,
-    ) -> "NewsArticle":
+    ) -> NewsArticle:
         source = payload.get("source") or {}
         source_name = str(source.get("name") or "").strip()
 

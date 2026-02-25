@@ -1,49 +1,78 @@
-# News Ingest Pipeline (NewsAPI -> Kinesis)
+Aurora Analytics — News Ingest Pipeline
+  Overview
 
-This project periodically fetches articles from NewsAPI (Everything API),
-cleans + validates them into a consistent JSON payload, and publishes each
-article to an AWS Kinesis Data Stream.
+  Aurora Analytics is a Python-based data ingestion pipeline that fetches news articles from the NewsAPI “Everything” endpoint, normalizes the data into a consistent schema, and streams records through a pluggable output writer.
 
-## Requirements covered
-- Fetch from NewsAPI Everything API on an interval
-- Clean/validate into JSON fields:
-  - article_id
-  - source_name
-  - title
-  - content
-  - Url
-  - author
-  - published_at
-  - ingested_at
-- Publish to AWS Kinesis Data Stream
-- Dockerfile + README included
 
-## Setup
+Architecture:
+  The system follows a layered design:
+  domain/
+      models.py        → Business entities (NewsArticle)
+  application/
+      use_cases.py     → Core ingestion logic
+      ports.py         → Interfaces (ClockPort, StreamWriterPort, NewsSourcePort)
+  infrastructure/
+      newsapi_client.py → External API adapter
+      console_writer.py → Local output adapter
+      kinesis_writer.py → AWS Kinesis adapter
+      settings.py       → Environment configuration
+  Flow
+  NewsAPI → UseCase → Writer Adapter
+  The use case is unaware of infrastructure details.
+  Output behavior is swapped through dependency injection.
 
-### Environment variables
-Required:
-- `NEWSAPI_API_KEY` - your NewsAPI key
-- `KINESIS_STREAM_NAME` - Kinesis Data Stream name
-- `AWS_REGION` - e.g. `ap-southeast-1`
+Features:
+  Polls NewsAPI periodically
+  Normalizes article payloads
+  Generates deterministic article_id
+  Streams records via adapter pattern
+  Structured logging
+  Docker-ready
 
-Optional:
-- `NEWSAPI_QUERY` (default: `market`)
-- `NEWSAPI_LANGUAGE` (default: `en`)
-- `NEWSAPI_PAGE_SIZE` (default: `50`)
-- `POLL_INTERVAL_SECONDS` (default: `60`)
+Requirements:
+  Python 3.11+
+    pip
+    NewsAPI account
 
-AWS credentials:
-- Use any standard AWS auth method supported by boto3:
-  - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (optional)
-  - or IAM role (recommended in real deployments)
+    Optional (for cloud mode):
+      AWS account
+      Kinesis stream
 
-### Run locally (venv)
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-source .venv/bin/activate
+  Environment Variables
+  Required
+  NEWSAPI_API_KEY=your_key_here
 
-pip install -U pip
-pip install -e ".[dev]"
+  Run Locally (Console Mode)
 
-python -m news_ingest.main
+  Windows CMD:
+    set NEWSAPI_API_KEY=YOUR_KEY
+    python -m news_ingest.main
+
+
+  Run with AWS Kinesis:
+    Replace the writer inside main.py with KinesisWriter if desired.
+    Set AWS variables:
+      set NEWSAPI_API_KEY=YOUR_KEY
+      set AWS_REGION=ap-southeast-1
+      set KINESIS_STREAM_NAME=aurora-stream
+      python -m news_ingest.main
+
+  Docker:
+    Build:
+    docker build -t aurora-analytics .
+
+    Linting & Style
+      ruff check .
+
+  Expected Result:
+    Example record:
+    {
+      "article_id": "...",
+      "source_name": "...",
+      "title": "...",
+      "content": "...",
+      "Url": "...",
+      "author": "...",
+      "published_at": "...",
+      "ingested_at": "..."
+    }
