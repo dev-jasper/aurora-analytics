@@ -11,6 +11,11 @@ def _req(name: str) -> str:
     return v
 
 
+def _opt(name: str) -> str | None:
+    v = os.getenv(name, "").strip()
+    return v or None
+
+
 def _opt_int(name: str, default: int) -> int:
     raw = os.getenv(name, "").strip()
     return default if not raw else int(raw)
@@ -23,17 +28,17 @@ class Settings:
     newsapi_language: str
     newsapi_page_size: int
     poll_interval_seconds: int
-    aws_region: str
-    kinesis_stream_name: str
+    aws_region: str | None
+    kinesis_stream_name: str | None
 
     @staticmethod
-    def from_env() -> "Settings":
+    def from_env() -> Settings:
         return Settings(
             newsapi_api_key=_req("NEWSAPI_API_KEY"),
             newsapi_query=os.getenv("NEWSAPI_QUERY", "market"),
             newsapi_language=os.getenv("NEWSAPI_LANGUAGE", "en"),
             newsapi_page_size=_opt_int("NEWSAPI_PAGE_SIZE", 50),
             poll_interval_seconds=_opt_int("POLL_INTERVAL_SECONDS", 60),
-            aws_region=_req("AWS_REGION"),
-            kinesis_stream_name=_req("KINESIS_STREAM_NAME"),
+            aws_region=_opt("AWS_REGION"),
+            kinesis_stream_name=_opt("KINESIS_STREAM_NAME"),
         )

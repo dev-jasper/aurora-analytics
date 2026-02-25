@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from news_ingest.application.ports import ClockPort
 
 
 class UtcClock(ClockPort):
     def now(self) -> datetime:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
