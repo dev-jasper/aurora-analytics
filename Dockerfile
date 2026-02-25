@@ -5,7 +5,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Copy packaging metadata + source first so pip can install the local package
 COPY pyproject.toml /app/pyproject.toml
 COPY src /app/src
 
